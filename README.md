@@ -14,3 +14,6 @@ Bu proje, farklı federated learning algoritmaları arasındaki performans farkl
 
 Kodun final çıktısı şu şekildedir:<br>
 ![fed models](https://github.com/user-attachments/assets/a13346ae-7741-47bd-90cb-86030554539c)
+<br>
+![model_accuracy](https://github.com/user-attachments/assets/f3c8a903-1415-45fc-9fa7-65387d6bd10a)
+
