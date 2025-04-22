@@ -6,16 +6,16 @@ import time
 import os
 from datetime import datetime
 
-# Import the different FL methods
-import Server  # Original FedAvg implementation
+
+import Server  
 from FedProx import train_fedprox
 from FedSGD import train_fedsgd
 from FedNova import train_fednova
 
-# Set parameters for comparison
+
 CLIENT_NUMBER = 100
 CLIENT_RATIO_PER_ROUND = 0.12
-EPOCHS = 20  # Reduced number of epochs for comparison
+EPOCHS = 20 
 TEST_NUM = 600
 FINAL_TEST_NUM = 10000
 
@@ -27,16 +27,14 @@ def evaluate_methods():
     
     results = {}
     
-    # Create results directory
+    
     os.makedirs("results", exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Run FedAvg (original implementation in Server.py)
+    
     print("\n===== Running FedAvg =====")
     start_time = time.time()
     
-    # Since we can't easily modify the original implementation to store metrics
-    # We'll just run it as is and note that it will print its results
     client = Server.buildClients(CLIENT_NUMBER)
     global_vars = client.get_client_vars()
     
@@ -44,26 +42,19 @@ def evaluate_methods():
     fedavg_loss = []
     
     for ep in range(EPOCHS):
-        # We are going to sum up active clients' vars at each epoch
         client_vars_sum = None
 
-        # Choose some clients that will train on this epoch
         random_clients = client.choose_clients(CLIENT_RATIO_PER_ROUND)
         total_data_size = sum([client.dataset.train[cid].size
                               for cid in random_clients])
 
-        # Train with these clients
         for client_id in random_clients:
-            # Restore global vars to client's model
             client.set_global_vars(global_vars)
              
-            # train one client
             data_size = client.train_epoch(cid=client_id)
              
-            # obtain current client's vars
             current_client_vars = client.get_client_vars()
 
-            # sum it up with weights
             weight = data_size / total_data_size
             if client_vars_sum is None:
                 client_vars_sum = [weight * x for x in current_client_vars]
@@ -71,17 +62,14 @@ def evaluate_methods():
                 for cv, ccv in zip(client_vars_sum, current_client_vars):
                     cv += weight * ccv
 
-        # assign the avg vars to global vars
         global_vars = client_vars_sum
 
-        # run test and collect metrics
         client.set_global_vars(global_vars)
         acc, loss = client.run_test(TEST_NUM)
         fedavg_acc.append(acc)
         fedavg_loss.append(loss)
         print(f"[epoch {ep + 1}, {TEST_NUM} inst] Testing ACC: {acc:.4f}, Loss: {loss:.4f}")
     
-    # Final evaluation
     client.set_global_vars(global_vars)
     final_acc, final_loss = client.run_test(FINAL_TEST_NUM)
     print(f"Final FedAvg results - Accuracy: {final_acc:.4f}, Loss: {final_loss:.4f}")
@@ -95,7 +83,6 @@ def evaluate_methods():
         'time': fedavg_time
     }
     
-    # Run FedProx
     print("\n===== Running FedProx =====")
     start_time = time.time()
     fedprox_results, fedprox_final_acc, fedprox_final_loss = train_fedprox(
@@ -110,7 +97,6 @@ def evaluate_methods():
         'time': fedprox_time
     }
     
-    # Run FedSGD
     print("\n===== Running FedSGD =====")
     start_time = time.time()
     fedsgd_results, fedsgd_final_acc, fedsgd_final_loss = train_fedsgd(
@@ -125,7 +111,6 @@ def evaluate_methods():
         'time': fedsgd_time
     }
     
-    # Run FedNova
     print("\n===== Running FedNova =====")
     start_time = time.time()
     fednova_results, fednova_final_acc, fednova_final_loss = train_fednova(
@@ -139,11 +124,9 @@ def evaluate_methods():
         'final_loss': fednova_final_loss,
         'time': fednova_time
     }
-    
-    # Generate plots
+
     plot_results(results, timestamp)
-    
-    # Print summary
+   
     print("\n===== Summary =====")
     print(f"{'Method':<10} {'Final Acc':<15} {'Final Loss':<15} {'Time (s)':<10}")
     print('-' * 50)
@@ -171,7 +154,6 @@ def plot_results(results, timestamp):
     plt.grid(True)
     plt.savefig(f"results/accuracy_comparison_{timestamp}.png")
     
-    # Loss plot
     plt.figure(figsize=(10, 6))
     for method, result in results.items():
         plt.plot(epochs, result['loss'], label=f"{method} (Final: {result['final_loss']:.4f})")
@@ -182,26 +164,24 @@ def plot_results(results, timestamp):
     plt.legend()
     plt.grid(True)
     plt.savefig(f"results/loss_comparison_{timestamp}.png")
-    
-    # Bar plot for final metrics
+  
     methods = list(results.keys())
     final_accs = [results[m]['final_acc'] for m in methods]
     final_losses = [results[m]['final_loss'] for m in methods]
     training_times = [results[m]['time'] for m in methods]
-    
-    # Final accuracy comparison
+
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 3, 1)
     plt.bar(methods, final_accs)
     plt.title('Final Accuracy')
     plt.ylim(0, 1)
     
-    # Final loss comparison
+    
     plt.subplot(1, 3, 2)
     plt.bar(methods, final_losses)
     plt.title('Final Loss')
     
-    # Training time comparison
+    
     plt.subplot(1, 3, 3)
     plt.bar(methods, training_times)
     plt.title('Training Time (s)')

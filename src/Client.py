@@ -6,7 +6,6 @@ import math
 from Model import AlexNet
 from Dataset import Dataset
 
-# The definition of fed model
 FedModel = namedtuple('FedModel', 'X Y DROP_RATE train_op loss_op acc_op')
 
 
@@ -15,16 +14,12 @@ class Clients:
         self.graph = tf.Graph()
         self.sess = tf.Session(graph=self.graph)
 
-        # Call the create function to build the computational graph of AlexNet
         net = AlexNet(input_shape, num_classes, learning_rate, self.graph)
         self.model = FedModel(*net)
 
-        # initialize
         with self.graph.as_default():
             self.sess.run(tf.global_variables_initializer())
 
-        # Load Cifar-10 dataset
-        # NOTE: len(self.dataset.train) == clients_num
         self.dataset = Dataset(tf.keras.datasets.cifar10.load_data,
                                split=clients_num)
 
