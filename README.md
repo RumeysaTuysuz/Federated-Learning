@@ -12,5 +12,5 @@ Bu proje, farklı federated learning algoritmaları arasındaki performans farkl
 
 4. **FedNova (Normalized Averaging)**: Client'ların farklı sayıda local update adımı atması durumunda, bu farklılıkları normalize eden bir yaklaşım.
 
-Kodumun final çıktısı şu şekildedir:
+Kodumun final çıktısı şu şekildedir:<br>
 ![fed models](https://github.com/user-attachments/assets/a13346ae-7741-47bd-90cb-86030554539c)
