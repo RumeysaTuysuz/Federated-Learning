@@ -61,7 +61,8 @@ def AlexNet(input_shape, num_classes, learning_rate, graph):
         accuracy = tf.reduce_mean(
             tf.cast(correct_pred, tf.float32))
 
-        return X, Y, DROP_RATE, train_op, loss_op, accuracy
+        # Return all necessary tensors, including pred
+        return X, Y, DROP_RATE, train_op, loss_op, accuracy, pred
 
 
 def conv(x, filter_height, filter_width, num_filters,
@@ -109,7 +110,8 @@ def conv(x, filter_height, filter_width, num_filters,
 def fc_layer(x, input_size, output_size, name, relu=True, k=20):
     """Create a fully connected layer."""
 
-    with tf.variable_scope(name) as scope:.
+    with tf.variable_scope(name) as scope:
+        # Create tf variables for the weights and biases.
         W = tf.get_variable('weights', shape=[input_size, output_size])
         b = tf.get_variable('biases', shape=[output_size])
         z = tf.nn.bias_add(tf.matmul(x, W), b, name=scope.name)
